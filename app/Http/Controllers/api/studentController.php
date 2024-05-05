@@ -34,10 +34,10 @@ class studentController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
+            'name' => 'required|string',
             'email' => 'required|email|unique:student',
-            'phone' => 'required',
-            'address' => 'required',
+            'phone' => 'required|numeric|min:10|unique:student',
+            'address' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -53,12 +53,47 @@ class studentController extends Controller
         $student = student::find($id);
 
         if ($student) {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string',
+                'email' => 'required|email|unique:student,email,' . $id,
+                'phone' => 'required|numeric|min:10|unique:student,phone,' . $id,
+                'address' => 'required|string',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
             $student->update($request->all());
             return response()->json($student, 200);
         } else {
             return response()->json(['message' => 'No records found'], 404);
         }
     }
+
+    public function updatePartial(Request $request, $id)
+    {
+        $student = student::find($id);
+
+        if($student) {
+            $validator = Validator::make($request->all(), [
+                'name' => 'string',
+                'email' => 'email|unique:student,email,' . $id,
+                'phone' => 'numeric|min:10|unique:student,phone,' . $id,
+                'address' => 'string',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+            $student->update($request->all());
+
+            return response()->json($student, 200);
+        } else {
+            return response()->json(['message' => 'No records found'], 404);
+        }
+    } 
 
     public function destroy($id)
     {
