@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\student;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
 
 class studentController extends Controller
 {
@@ -14,9 +15,9 @@ class studentController extends Controller
         $students = student::all();
 
         if ($students) {
-            return response()->json($students, 200);
+            return response()->json($students, Response::HTTP_OK);
         } else {
-            return response()->json(['message' => 'No records found'], 404);
+            return response()->json(['message' => 'No records found'], Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -25,9 +26,9 @@ class studentController extends Controller
         $student = student::find($id);
 
         if ($student) {
-            return response()->json($student, 200);
+            return response()->json($student, Response::HTTP_OK);
         } else {
-            return response()->json(['message' => 'No records found'], 404);
+            return response()->json(['message' => 'No records found'], Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -41,11 +42,11 @@ class studentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
+            return response()->json($validator->errors(), Response::HTTP_BAD_REQUEST);
         }
 
         $student = student::create($request->all());
-        return response()->json($student, 201);
+        return response()->json($student, Response::HTTP_CREATED);
     }
 
     public function update(Request $request, $id)
@@ -61,13 +62,13 @@ class studentController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
+                return response()->json($validator->errors(), Response::HTTP_BAD_REQUEST);
             }
 
             $student->update($request->all());
-            return response()->json($student, 200);
+            return response()->json($student, Response::HTTP_OK);
         } else {
-            return response()->json(['message' => 'No records found'], 404);
+            return response()->json(['message' => 'No records found'], Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -84,14 +85,14 @@ class studentController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
+                return response()->json($validator->errors(), Response::HTTP_BAD_REQUEST);
             }
 
             $student->update($request->all());
 
-            return response()->json($student, 200);
+            return response()->json($student, Response::HTTP_OK);
         } else {
-            return response()->json(['message' => 'No records found'], 404);
+            return response()->json(['message' => 'No records found'], Response::HTTP_NOT_FOUND);
         }
     } 
 
@@ -101,9 +102,9 @@ class studentController extends Controller
 
         if ($student) {
             $student->delete();
-            return response()->json(['message' => 'Record deleted'], 200);
+            return response()->json(['message' => 'Record deleted'], Response::HTTP_OK);
         } else {
-            return response()->json(['message' => 'No records found'], 404);
+            return response()->json(['message' => 'No records found'], Response::HTTP_NOT_FOUND);
         }
     }
 }
