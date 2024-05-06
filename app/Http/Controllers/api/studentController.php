@@ -4,7 +4,7 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\student;
+use App\Models\Student;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -47,12 +47,15 @@ class studentController extends Controller
                 return response()->json($validator->errors(), Response::HTTP_BAD_REQUEST);
             }
 
-            $student = student::where('email', $request->email)->first();
+            $student = Student::where('email', $request->email)->first();
 
             if ($student && \Hash::check($request->password, $student->password)) {
                 $token = $student->createToken('auth_token')->plainTextToken;
-                $cookie = cookie('jwt', $token, 60 * 24);
-                return response()->json(['message' => 'Login successful'], Response::HTTP_OK)->withCookie($cookie);
+                return response()->json([
+                    'message'       => 'Login success',
+                    'access_token'  => $token,
+                    'token_type'    => 'Bearer'
+                ], Response::HTTP_OK);
             } else {
                 return response()->json(['message' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
             }
@@ -63,7 +66,7 @@ class studentController extends Controller
 
     public function index()
     {
-        $students = student::all();
+        $students = Student::all();
 
         if ($students) {
             return response()->json($students, Response::HTTP_OK);
@@ -74,7 +77,7 @@ class studentController extends Controller
 
     public function show($id)
     {
-        $student = student::find($id);
+        $student = Student::find($id);
 
         if ($student) {
             return response()->json($student, Response::HTTP_OK);
@@ -85,7 +88,7 @@ class studentController extends Controller
 
     public function update(Request $request, $id)
     {
-        $student = student::find($id);
+        $student = Student::find($id);
 
         if ($student) {
             $validator = Validator::make($request->all(), [
@@ -108,7 +111,7 @@ class studentController extends Controller
 
     public function updatePartial(Request $request, $id)
     {
-        $student = student::find($id);
+        $student = Student::find($id);
 
         if($student) {
             $validator = Validator::make($request->all(), [
@@ -132,7 +135,7 @@ class studentController extends Controller
 
     public function destroy($id)
     {
-        $student = student::find($id);
+        $student = Student::find($id);
 
         if ($student) {
             $student->delete();
