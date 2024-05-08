@@ -12,27 +12,31 @@ class studentController extends Controller
 {
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string',
-            'email' => 'required|email|unique:student',
-            'phone' => 'required|numeric|min:10|unique:student',
-            'address' => 'required|string',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string',
+                'email' => 'required|email|unique:student',
+                'phone' => 'required|numeric|min:10|unique:student',
+                'address' => 'required|string',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), Response::HTTP_BAD_REQUEST);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), Response::HTTP_BAD_REQUEST);
+            }
+
+            $student = Student::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'password' => bcrypt($request->password),
+            ]);
+
+            return response()->json($student, Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        $student = Student::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'password' => bcrypt($request->password),
-        ]);
-
-        return response()->json($student, Response::HTTP_CREATED);
     }
 
     public function login(Request $request)
@@ -54,13 +58,14 @@ class studentController extends Controller
                 return response()->json([
                     'message'       => 'Login success',
                     'access_token'  => $token,
-                    'token_type'    => 'Bearer'
+                    'token_type'    => 'Bearer',
+                    'user'       => $student
                 ], Response::HTTP_OK);
             } else {
-                return response()->json(['message' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
+                return response()->json(['error' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
             }
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -71,7 +76,7 @@ class studentController extends Controller
         if ($students) {
             return response()->json($students, Response::HTTP_OK);
         } else {
-            return response()->json(['message' => 'No records found'], Response::HTTP_NOT_FOUND);
+            return response()->json(['error' => 'No records found'], Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -82,7 +87,7 @@ class studentController extends Controller
         if ($student) {
             return response()->json($student, Response::HTTP_OK);
         } else {
-            return response()->json(['message' => 'No records found'], Response::HTTP_NOT_FOUND);
+            return response()->json(['error' => 'No records found'], Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -105,7 +110,7 @@ class studentController extends Controller
             $student->update($request->all());
             return response()->json($student, Response::HTTP_OK);
         } else {
-            return response()->json(['message' => 'No records found'], Response::HTTP_NOT_FOUND);
+            return response()->json(['error' => 'No records found'], Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -129,7 +134,7 @@ class studentController extends Controller
 
             return response()->json($student, Response::HTTP_OK);
         } else {
-            return response()->json(['message' => 'No records found'], Response::HTTP_NOT_FOUND);
+            return response()->json(['error' => 'No records found'], Response::HTTP_NOT_FOUND);
         }
     } 
 
@@ -141,7 +146,7 @@ class studentController extends Controller
             $student->delete();
             return response()->json(['message' => 'Record deleted'], Response::HTTP_OK);
         } else {
-            return response()->json(['message' => 'No records found'], Response::HTTP_NOT_FOUND);
+            return response()->json(['error' => 'No records found'], Response::HTTP_NOT_FOUND);
         }
     }
 }
